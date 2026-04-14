@@ -1,0 +1,12 @@
+[project]
+name = "decision-intelligence-logistics-engine"
+version = "0.1.0"
+description = "End-to-end decision intelligence system for logistics optimization"
+authors = [{name="Christian Piermarini"}]
+dependencies = []
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
