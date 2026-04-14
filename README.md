@@ -113,6 +113,7 @@ Project setup in progress.
 - Create the initial data generation pipeline
 - Implement a baseline optimization model
 - Add the first FastAPI endpoint
+- (Optional) integrate an AI powered layer to answer business related questions on data
 
 Author
 
