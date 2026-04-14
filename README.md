@@ -109,10 +109,10 @@ It emphasizes:
 Project setup in progress.
 
 ## Next Steps
-Define the synthetic logistics network schema
-Create the initial data generation pipeline
-Implement a baseline optimization model
-Add the first FastAPI endpoint
+- Define the synthetic logistics network schema
+- Create the initial data generation pipeline
+- Implement a baseline optimization model
+- Add the first FastAPI endpoint
 
 Author
 
