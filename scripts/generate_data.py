@@ -4,7 +4,7 @@ from data.generation import generate_synthetic_logistics_data
 from datetime import datetime
 
 def main() -> None:
-    output_dir = Path("data/synthetic")
+    output_dir = Path("../data/synthetic")
     output_dir.mkdir(parents=True, exist_ok=True)
 
     generate_synthetic_logistics_data(
