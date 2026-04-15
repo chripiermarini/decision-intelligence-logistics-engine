@@ -29,10 +29,10 @@ class Config:
     data: DataConfig
 
 
-def load_config(config_path: Path) -> Config:
+def load_config(project_root: Path, config_path: Path) -> Config:
     with open(config_path, "r") as f:
         raw = yaml.safe_load(f)  ## raw is a dict
 
     return Config(
-        DataConfig(raw["data"]["input_path"]),
+        DataConfig(project_root / (raw["data"]["input_path"])),
     )
