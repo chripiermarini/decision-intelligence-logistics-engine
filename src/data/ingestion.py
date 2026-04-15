@@ -4,6 +4,20 @@ from polars import DataFrame
 
 from data.input_data import InputData
 
+class DemandFileNormalizer:
+    """
+    Scope of this class is to reduce the redundancy of the input data, provide the correct format and type
+    of the data, and handle possible null values.
+    """
+
+    @staticmethod
+    def process(df: DataFrame) -> DataFrame:
+
+        # date must be primary key, hence null values break the code
+        if df.null_count().to_numpy().sum() > 0:
+            raise ValueError("Null values are not allowed.")
+
+        return df
 
 class Reader:
     def __init__(self, input_path: Path):
@@ -11,8 +25,11 @@ class Reader:
         self._validate_path()
 
     def read(self) -> InputData:
+
+        demand_history = self._read_parquet("demand_history.parquet")
+
         return InputData(
-            demand_history=self._read_parquet("demand_history.parquet"),
+            demand_history=DemandFileNormalizer.process(demand_history),
             destinations=self._read_parquet("destinations.parquet"),
             lanes=self._read_parquet("lanes.parquet"),
             origins=self._read_parquet("origins.parquet"),
