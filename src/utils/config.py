@@ -18,6 +18,8 @@ from dataclasses import dataclass
 from pathlib import Path
 import yaml
 
+### ----- config related dataclasses
+
 
 @dataclass
 class DataConfig:
@@ -27,6 +29,9 @@ class DataConfig:
 @dataclass
 class Config:
     data: DataConfig
+
+
+### ----- main config reading method
 
 
 def load_config(project_root: Path, config_path: Path) -> Config:
