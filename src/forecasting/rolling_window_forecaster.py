@@ -6,11 +6,14 @@ The module will allow to use a naive baseline model computed through a rolling a
 import polars as pl
 from forecasting.base_forecaster import BaseForecaster
 
+
 class RollingWindowForecaster(BaseForecaster):
 
-    def __init__(self, rolling_window : int):
+    def __init__(self, target_col: str = "demand", rolling_window: int = 1):
 
         self.rolling_window = rolling_window
+        self.target_col = target_col
+        self.forecast_col = f"ma_{self.rolling_window}_forecast"
 
     def fit(self, df: pl.DataFrame):
         """
@@ -24,13 +27,9 @@ class RollingWindowForecaster(BaseForecaster):
         moving average prediction using a rolling average.
         """
 
-        forecast_col = f"ma_{self.rolling_window}_forecast"
-
-        return (
-            df.with_columns(
-                pl.col("demand")
-                .shift(1)
-                .rolling_mean(window_size=self.rolling_window)
-                .alias(forecast_col)
-            )
+        return df.with_columns(
+            pl.col(self.target_col)
+            .shift(1)
+            .rolling_mean(window_size=self.rolling_window)
+            .alias(self.forecast_col)
         )

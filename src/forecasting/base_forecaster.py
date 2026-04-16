@@ -6,6 +6,7 @@ other main forecaster module.
 import polars as pl
 from abc import ABC, abstractmethod
 
+
 class BaseForecaster(ABC):
 
     @abstractmethod
