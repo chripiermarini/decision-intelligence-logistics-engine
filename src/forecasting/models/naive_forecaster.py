@@ -1,5 +1,5 @@
 import polars as pl
-from forecasting.base_forecaster import BaseForecaster
+from forecasting.models.base_forecaster import BaseForecaster
 
 
 class NaiveForecaster(BaseForecaster):

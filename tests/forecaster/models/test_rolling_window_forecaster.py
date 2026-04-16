@@ -1,6 +1,6 @@
 import pytest
 import polars as pl
-from forecasting.rolling_window_forecaster import RollingWindowForecaster
+from forecasting.models.rolling_window_forecaster import RollingWindowForecaster
 
 
 class TestRollingWindowForecaster:

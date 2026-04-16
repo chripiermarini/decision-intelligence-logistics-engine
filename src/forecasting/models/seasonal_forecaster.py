@@ -5,7 +5,7 @@ of demand of the 'x'-days before.
 
 import polars as pl
 
-from forecasting.base_forecaster import BaseForecaster
+from forecasting.models.base_forecaster import BaseForecaster
 
 
 class SeasonalForecaster(BaseForecaster):

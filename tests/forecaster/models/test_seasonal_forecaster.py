@@ -1,7 +1,6 @@
-import pytest
 import polars as pl
 
-from forecasting.seasonal_forecaster import SeasonalForecaster
+from forecasting.models.seasonal_forecaster import SeasonalForecaster
 
 
 class TestSeasonalForecaster:

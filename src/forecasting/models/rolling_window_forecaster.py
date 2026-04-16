@@ -4,7 +4,7 @@ The module will allow to use a naive baseline model computed through a rolling a
 """
 
 import polars as pl
-from forecasting.base_forecaster import BaseForecaster
+from forecasting.models.base_forecaster import BaseForecaster
 
 
 class RollingWindowForecaster(BaseForecaster):

@@ -1,7 +1,6 @@
 import polars
-import polars as pl
 
-from forecasting.naive_forecaster import NaiveForecaster
+from forecasting.models.naive_forecaster import NaiveForecaster
 
 
 class TestNaiveForecaster:
