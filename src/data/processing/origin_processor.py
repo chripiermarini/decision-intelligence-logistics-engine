@@ -1,6 +1,7 @@
 from data.processing.base_processor import BaseProcessor
 from polars import DataFrame
 
+
 class OriginsProcessor(BaseProcessor):
 
     REQUIRED_COLUMNS = {"origin_id"}

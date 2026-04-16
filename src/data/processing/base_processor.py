@@ -1,5 +1,6 @@
 from polars import DataFrame
 
+
 class BaseProcessor:
 
     @staticmethod

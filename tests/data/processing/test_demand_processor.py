@@ -3,6 +3,7 @@ import polars as pl
 
 from data.processing.demand_processor import DemandProcessor
 
+
 class TestDemandProcessor:
 
     @pytest.fixture
@@ -20,7 +21,6 @@ class TestDemandProcessor:
 
         assert df is not None
         assert df.shape[0] == 2
-
 
     def test_empty_df(self):
         empty_df = pl.DataFrame({})

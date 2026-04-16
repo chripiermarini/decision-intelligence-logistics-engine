@@ -4,6 +4,7 @@ from polars import DataFrame
 
 from data.input_data import InputData
 
+
 class Reader:
     def __init__(self, input_path: Path):
         self.input_path = input_path

@@ -2,6 +2,7 @@ from data.processing.base_processor import BaseProcessor
 
 from polars import DataFrame
 
+
 class LanesProcessor(BaseProcessor):
 
     REQUIRED_COLUMNS = {"origin_id", "destination_id", "unit_cost"}

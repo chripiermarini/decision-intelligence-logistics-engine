@@ -2,6 +2,7 @@ from data.processing.base_processor import BaseProcessor
 
 from polars import DataFrame
 
+
 class DemandProcessor(BaseProcessor):
 
     REQUIRED_COLUMNS = {"date", "destination_id", "demand"}
