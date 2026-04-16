@@ -11,6 +11,7 @@ from sklearn.metrics import (
     mean_absolute_percentage_error,
 )
 
+
 class Evaluator:
 
     def __init__(self, df: pl.DataFrame, target_col_name: str, forecast_col_name: str):
