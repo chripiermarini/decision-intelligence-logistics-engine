@@ -16,6 +16,10 @@ class SeasonalForecaster(BaseForecaster):
 
         self.forecast_col = f"seasonal_forecast_lag_{lag_value}"
 
+    @property
+    def name(self):
+        return f"seasonal_forecaster_lag_{self.lag_value}"
+
     def fit(self, df: pl.DataFrame):
         pass
 

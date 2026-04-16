@@ -15,6 +15,10 @@ class RollingWindowForecaster(BaseForecaster):
         self.target_col = target_col
         self.forecast_col = f"ma_{self.rolling_window}_forecast"
 
+    @property
+    def name(self):
+        return f"ma_{self.rolling_window}_forecaster"
+
     def fit(self, df: pl.DataFrame):
         """
         Rolling window forecasting do not require training.

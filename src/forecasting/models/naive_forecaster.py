@@ -8,6 +8,10 @@ class NaiveForecaster(BaseForecaster):
         self.target_col = target_col
         self.forecast_col = "naive_forecast"
 
+    @property
+    def name(self):
+        return "naive_forecaster"
+
     def fit(self, df: pl.DataFrame):
         pass
 

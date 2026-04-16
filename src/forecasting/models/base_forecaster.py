@@ -9,6 +9,11 @@ from abc import ABC, abstractmethod
 
 class BaseForecaster(ABC):
 
+    @property
+    @abstractmethod
+    def name(self):
+        pass
+
     @abstractmethod
     def fit(self, df: pl.DataFrame):
         """
