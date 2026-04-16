@@ -22,3 +22,7 @@ class TestDemandProcessor:
         assert df.shape[0] == 2
 
 
+    def test_empty_df(self):
+        empty_df = pl.DataFrame({})
+        with pytest.raises(ValueError):
+            DemandProcessor.process(empty_df)
