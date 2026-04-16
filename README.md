@@ -54,6 +54,7 @@ This repository is meant to reflect how real-world planning systems are built: n
 - Python
 - Polars
 - DuckDB
+- Scikit-learn
 - Pyomo
 - FastAPI
 - MLflow
