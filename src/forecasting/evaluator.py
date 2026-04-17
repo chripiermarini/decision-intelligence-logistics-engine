@@ -14,15 +14,16 @@ from sklearn.metrics import (
 
 class Evaluator:
 
-    def __init__(self, df: pl.DataFrame, target_col_name: str, forecast_col_name: str):
+    def __init__(self, df: pl.DataFrame, target_col_name: str):
         self.target_col_name = target_col_name
-        self.forecast_col_name = forecast_col_name
-        self.df = self._delete_null_values(df)
+        self.df = df
 
-    def compute_metrics(self):
+    def compute_metrics(self, forecast_col_name):
+
+        self.df = self._delete_null_values(self.df, forecast_col_name=forecast_col_name)
 
         target = self.df[self.target_col_name].to_numpy()
-        forecast = self.df[self.forecast_col_name].to_numpy()
+        forecast = self.df[forecast_col_name].to_numpy()
 
         mae = mean_absolute_error(target, forecast)
         mse = mean_squared_error(target, forecast)
@@ -44,10 +45,11 @@ class Evaluator:
 
         return np.sum(np.abs(target_col - forecast_col)) / denominator
 
-    def _delete_null_values(self, df: pl.DataFrame):
+    @staticmethod
+    def _delete_null_values(df: pl.DataFrame, forecast_col_name: str):
         original_length = df.height
 
-        filtered_df = df.drop_nulls(subset=[self.forecast_col_name])
+        filtered_df = df.drop_nulls(subset=[forecast_col_name])
         if original_length != filtered_df.height:
             print("Null values found and removed.")
 

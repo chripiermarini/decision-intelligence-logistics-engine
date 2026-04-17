@@ -15,8 +15,8 @@ class TestEvaluator:
             }
         )
 
-        evaluator = Evaluator(df, "demand", "forecast")
-        metrics = evaluator.compute_metrics()
+        evaluator = Evaluator(df, "demand")
+        metrics = evaluator.compute_metrics("forecast")
 
         assert "mae" in metrics
         assert "mse" in metrics
@@ -39,8 +39,8 @@ class TestEvaluator:
             }
         )
 
-        evaluator = Evaluator(df, "demand", "forecast")
-        metrics = evaluator.compute_metrics()
+        evaluator = Evaluator(df, "demand")
+        metrics = evaluator.compute_metrics("forecast")
 
         expected_errors = np.array([2.0, 3.0])
 
@@ -54,8 +54,8 @@ class TestEvaluator:
             }
         )
 
-        evaluator = Evaluator(df, "demand", "forecast")
-        metrics = evaluator.compute_metrics()
+        evaluator = Evaluator(df, "demand")
+        metrics = evaluator.compute_metrics("forecast")
 
         assert np.isnan(metrics["wape"])
 
@@ -67,14 +67,14 @@ class TestEvaluator:
             }
         )
 
-        evaluator = Evaluator(df, "demand", "forecast")
-        metrics = evaluator.compute_metrics()
+        evaluator = Evaluator(df, "demand")
+        metrics = evaluator.compute_metrics("forecast")
 
         assert metrics["mae"] == 0.0
         assert metrics["mse"] == 0.0
         assert metrics["wape"] == 0.0
 
-    def test_shape_after_null_removal(self):
+    def test_null_filtering_effect(self):
         df = pl.DataFrame(
             {
                 "demand": [10.0, 20.0, 30.0, 40.0],
@@ -82,7 +82,10 @@ class TestEvaluator:
             }
         )
 
-        evaluator = Evaluator(df, "demand", "forecast")
+        evaluator = Evaluator(df, "demand")
+        metrics = evaluator.compute_metrics("forecast")
 
-        # dopo filtering dovrebbero restare solo 2 righe
-        assert evaluator.df.height == 2
+        # dopo il filtering restano solo 2 righe:
+        expected_errors = np.array([0.0, 0.0])
+
+        assert metrics["mae"] == pytest.approx(np.mean(np.abs(expected_errors)))
