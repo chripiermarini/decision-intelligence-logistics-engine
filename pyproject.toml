@@ -3,7 +3,22 @@ name = "decision-intelligence-logistics-engine"
 version = "0.1.0"
 description = "End-to-end decision intelligence system for logistics optimization"
 authors = [{name="Christian Piermarini"}]
-dependencies = []
+requires-python = ">=3.11"
+dependencies = [
+    "polars>=1.39",
+    "numpy>=2.0",
+    "scikit-learn>=1.8",
+    "matplotlib>=3.10",
+    "pyyaml>=6.0",
+    "ortools>=9.15",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0",
+    "hypothesis>=6.0",
+    "black>=24.0",
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -14,3 +29,7 @@ target-version = ["py311"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
