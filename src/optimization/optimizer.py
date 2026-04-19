@@ -246,7 +246,9 @@ class Optimizer:
             )
 
     @staticmethod
-    def _check_daily_capacity(demand_df: pl.DataFrame, origins_df: pl.DataFrame) -> None:
+    def _check_daily_capacity(
+        demand_df: pl.DataFrame, origins_df: pl.DataFrame
+    ) -> None:
         """Raise if total daily_capacity is strictly less than total demand."""
         total_demand = demand_df["demand"].sum()
         total_daily_capacity = origins_df["daily_capacity"].sum()
