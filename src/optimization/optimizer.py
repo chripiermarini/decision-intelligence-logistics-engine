@@ -46,90 +46,6 @@ class Optimizer:
             )
         self._solver_name = solver_name
 
-    # ------------------------------------------------------------------
-    # Input validation helpers
-    # ------------------------------------------------------------------
-
-    @staticmethod
-    def _validate_not_empty(
-        demand_df: pl.DataFrame,
-        origins_df: pl.DataFrame,
-        lanes_df: pl.DataFrame,
-    ) -> None:
-        """Raise ``ValueError`` if any input DataFrame is empty."""
-        if demand_df.is_empty():
-            raise ValueError("Demand DataFrame is empty — no demand data available")
-        if origins_df.is_empty():
-            raise ValueError("Origins DataFrame is empty — no origin data available")
-        if lanes_df.is_empty():
-            raise ValueError("Lanes DataFrame is empty — no lane data available")
-
-    @staticmethod
-    def _validate_columns(
-        demand_df: pl.DataFrame,
-        origins_df: pl.DataFrame,
-        lanes_df: pl.DataFrame,
-    ) -> None:
-        """Raise ``ValueError`` if required columns are missing."""
-        demand_required = {"destination_id", "demand"}
-        demand_missing = demand_required - set(demand_df.columns)
-        if demand_missing:
-            raise ValueError(
-                f"Demand DataFrame missing columns {sorted(demand_missing)}. "
-                f"Expected: {sorted(demand_required)}"
-            )
-
-        origins_required = {"origin_id", "daily_capacity"}
-        origins_missing = origins_required - set(origins_df.columns)
-        if origins_missing:
-            raise ValueError(
-                f"Origins DataFrame missing columns {sorted(origins_missing)}. "
-                f"Expected: {sorted(origins_required)}"
-            )
-
-        lanes_required = {"origin_id", "destination_id", "unit_cost"}
-        lanes_missing = lanes_required - set(lanes_df.columns)
-        if lanes_missing:
-            raise ValueError(
-                f"Lanes DataFrame missing columns {sorted(lanes_missing)}. "
-                f"Expected: {sorted(lanes_required)}"
-            )
-
-    # ------------------------------------------------------------------
-    # Pre-solve feasibility checks
-    # ------------------------------------------------------------------
-
-    @staticmethod
-    def _check_unreachable_destinations(
-        demand_df: pl.DataFrame, lanes_df: pl.DataFrame
-    ) -> None:
-        """Raise if any demanded destination has no lane serving it."""
-        demanded_ids = set(demand_df["destination_id"].to_list())
-        lane_dest_ids = set(lanes_df["destination_id"].to_list())
-        unreachable = sorted(demanded_ids - lane_dest_ids)
-        if unreachable:
-            raise ValueError(
-                f"Unreachable destinations (no lane available): {unreachable}"
-            )
-
-    @staticmethod
-    def _check_daily_capacity(demand_df: pl.DataFrame, origins_df: pl.DataFrame) -> None:
-        """Raise if total daily_capacity is strictly less than total demand."""
-        total_demand = demand_df["demand"].sum()
-        total_daily_capacity = origins_df["daily_capacity"].sum()
-        if total_daily_capacity < total_demand:
-            shortfall = total_demand - total_daily_capacity
-            raise ValueError(
-                f"Insufficient total daily_capacity. "
-                f"Total demand: {total_demand}, "
-                f"total daily_capacity: {total_daily_capacity}, "
-                f"shortfall: {shortfall}"
-            )
-
-    # ------------------------------------------------------------------
-    # Solve
-    # ------------------------------------------------------------------
-
     def solve(
         self,
         demand_df: pl.DataFrame,
@@ -245,7 +161,7 @@ class Optimizer:
                 f"Solver did not find an optimal solution (status={status})"
             )
 
-        # --- extract positive flows ---------------------------------------
+        # --- extract flows ---------------------------------------
         rows: list[dict[str, object]] = []
         for (o, d), var in x.items():
             flow = var.solution_value()
@@ -262,3 +178,83 @@ class Optimizer:
         )
 
         return OptimizationResult(flows=flows_df, total_cost=total_cost)
+
+    # ------------------------------------------------------------------
+    # Input validation helpers
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _validate_not_empty(
+        demand_df: pl.DataFrame,
+        origins_df: pl.DataFrame,
+        lanes_df: pl.DataFrame,
+    ) -> None:
+        """Raise ``ValueError`` if any input DataFrame is empty."""
+        if demand_df.is_empty():
+            raise ValueError("Demand DataFrame is empty — no demand data available")
+        if origins_df.is_empty():
+            raise ValueError("Origins DataFrame is empty — no origin data available")
+        if lanes_df.is_empty():
+            raise ValueError("Lanes DataFrame is empty — no lane data available")
+
+    @staticmethod
+    def _validate_columns(
+        demand_df: pl.DataFrame,
+        origins_df: pl.DataFrame,
+        lanes_df: pl.DataFrame,
+    ) -> None:
+        """Raise ``ValueError`` if required columns are missing."""
+        demand_required = {"destination_id", "demand"}
+        demand_missing = demand_required - set(demand_df.columns)
+        if demand_missing:
+            raise ValueError(
+                f"Demand DataFrame missing columns {sorted(demand_missing)}. "
+                f"Expected: {sorted(demand_required)}"
+            )
+
+        origins_required = {"origin_id", "daily_capacity"}
+        origins_missing = origins_required - set(origins_df.columns)
+        if origins_missing:
+            raise ValueError(
+                f"Origins DataFrame missing columns {sorted(origins_missing)}. "
+                f"Expected: {sorted(origins_required)}"
+            )
+
+        lanes_required = {"origin_id", "destination_id", "unit_cost"}
+        lanes_missing = lanes_required - set(lanes_df.columns)
+        if lanes_missing:
+            raise ValueError(
+                f"Lanes DataFrame missing columns {sorted(lanes_missing)}. "
+                f"Expected: {sorted(lanes_required)}"
+            )
+
+    # ------------------------------------------------------------------
+    # Pre-solve feasibility checks
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _check_unreachable_destinations(
+        demand_df: pl.DataFrame, lanes_df: pl.DataFrame
+    ) -> None:
+        """Raise if any demanded destination has no lane serving it."""
+        demanded_ids = set(demand_df["destination_id"].to_list())
+        lane_dest_ids = set(lanes_df["destination_id"].to_list())
+        unreachable = sorted(demanded_ids - lane_dest_ids)
+        if unreachable:
+            raise ValueError(
+                f"Unreachable destinations (no lane available): {unreachable}"
+            )
+
+    @staticmethod
+    def _check_daily_capacity(demand_df: pl.DataFrame, origins_df: pl.DataFrame) -> None:
+        """Raise if total daily_capacity is strictly less than total demand."""
+        total_demand = demand_df["demand"].sum()
+        total_daily_capacity = origins_df["daily_capacity"].sum()
+        if total_daily_capacity < total_demand:
+            shortfall = total_demand - total_daily_capacity
+            raise ValueError(
+                f"Insufficient total daily_capacity. "
+                f"Total demand: {total_demand}, "
+                f"total daily_capacity: {total_daily_capacity}, "
+                f"shortfall: {shortfall}"
+            )
