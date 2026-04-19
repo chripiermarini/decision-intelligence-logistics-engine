@@ -45,7 +45,7 @@ class ForecastExtractor:
         )
 
     @staticmethod
-    def aggregate_demand(forecast_df: pl.DataFrame) -> pl.DataFrame:
+    def aggregate_total_demand(forecast_df: pl.DataFrame) -> pl.DataFrame:
         """Return a DataFrame with columns ``[destination_id, demand]``.
 
         Groups *forecast_df* by ``destination_id`` and sums the
@@ -63,7 +63,30 @@ class ForecastExtractor:
         pl.DataFrame
             One row per destination with the total demand.
         """
-        return (
-            forecast_df.group_by("destination_id")
-            .agg(pl.col("forecast").sum().alias("demand"))
+        return forecast_df.group_by("destination_id").agg(
+            pl.col("forecast").sum().alias("forecasted_demand")
+        )
+
+    @staticmethod
+    def aggregate_average_demand(forecast_df: pl.DataFrame) -> pl.DataFrame:
+        """Return a DataFrame with columns ``[destination_id, demand]``.
+
+        Groups *forecast_df* by ``destination_id`` and sums the
+        ``forecast`` column, excluding null values.  The aggregated
+        column is renamed to ``demand``.
+
+        Parameters
+        ----------
+        forecast_df : pl.DataFrame
+            A Forecast_DataFrame with schema
+            ``[date, destination_id, forecast]``.
+
+        Returns
+        -------
+        pl.DataFrame
+            One row per destination with the total demand.
+        """
+
+        return forecast_df.group_by("destination_id").agg(
+            pl.col("forecast").mean().alias("demand")
         )
