@@ -1,0 +1,10 @@
+# Core dependencies
+polars==1.39.3
+numpy==2.4.4
+scikit-learn==1.8.0
+matplotlib==3.10.8
+pyyaml==6.0.3
+ortools==9.15.6755
+
+# Development / Testing
+pytest==9.0.3
