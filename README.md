@@ -149,10 +149,10 @@ It emphasizes:
 Core pipeline implemented and functional: data ingestion → forecasting → model selection → optimization.
 
 ## Next Steps
-- Implement stochastic simulation layer
 - Add FastAPI endpoints for end-to-end execution
 - Integrate MLflow experiment tracking
 - Add Docker support
+- Implement stochastic simulation layer
 - (Optional) integrate an AI powered layer to answer business related questions on data
 
 Author
