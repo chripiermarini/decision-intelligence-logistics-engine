@@ -11,6 +11,7 @@ dependencies = [
     "matplotlib>=3.10",
     "pyyaml>=6.0",
     "ortools>=9.15",
+    "statsmodels>=0.14",
 ]
 
 [project.optional-dependencies]

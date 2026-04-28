@@ -5,6 +5,7 @@ scikit-learn==1.8.0
 matplotlib==3.10.8
 pyyaml==6.0.3
 ortools==9.15.6755
+statsmodels>=0.14
 
 # Development / Testing
 pytest==9.0.3
