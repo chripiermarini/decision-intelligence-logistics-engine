@@ -9,6 +9,7 @@ from sklearn.metrics import (
     mean_squared_error,
     mean_absolute_error,
     mean_absolute_percentage_error,
+    root_mean_squared_error
 )
 
 
@@ -27,12 +28,14 @@ class Evaluator:
 
         mae = mean_absolute_error(target, forecast)
         mse = mean_squared_error(target, forecast)
+        rmse = root_mean_squared_error(target, forecast)
         mape = mean_absolute_percentage_error(target, forecast)
         wape = self._wape(target, forecast)
 
         return {
             "mae": mae,
             "mse": mse,
+            "rmse": rmse,
             "mape": mape,
             "wape": wape,
         }
