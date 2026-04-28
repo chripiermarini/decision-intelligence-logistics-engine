@@ -21,6 +21,8 @@ import logging
 from data.ingestion import Reader
 from data.processing.data_processor import DataProcessor
 
+from forecasting.models.arima_forecaster import ARIMAForecaster
+from forecasting.models.ets_forecaster import ETSForecaster
 from forecasting.models.naive_forecaster import NaiveForecaster
 from forecasting.models.rolling_window_forecaster import RollingWindowForecaster
 from forecasting.models.seasonal_forecaster import SeasonalForecaster
@@ -58,9 +60,9 @@ def parse_args():
     return parser.parse_args()
 
 
-def run_forecasting(clean_data, models):
+def run_forecasting(clean_data, models, train_ratio=None):
     pipeline = ForecastingPipeline(models=models)
-    results = pipeline.run(clean_data.demand_history)
+    results = pipeline.run(clean_data.demand_history, train_ratio=train_ratio)
 
     logger.info("Forecasting completed. Shape: %s", results.shape)
     return results
@@ -80,11 +82,17 @@ def evaluate_models(results, models, output_path):
     metrics_summary.save_summary(summary)
 
     logger.info("Model evaluation completed.")
+    logger.info("Metrics summary (all %d models):\n%s", summary.shape[0], summary)
     return summary
 
 
-def select_and_aggregate(results, summary, models):
-    best_model_name = ModelSelector.select_best(summary, metric="wape")
+def select_and_aggregate(results, summary, models, config=None):
+    metric = "wape"
+    if config is not None and config.forecasting is not None:
+        metric = config.forecasting.metric
+    logger.info("Using SINGLE-METRIC model selection on '%s'", metric)
+    best_model_name = ModelSelector.select_best(summary, metric=metric)
+
     best_model = next(m for m in models if m.name == best_model_name)
 
     logger.info("Best model selected: %s", best_model_name)
@@ -146,9 +154,24 @@ def main():
         NaiveForecaster(),
         SeasonalForecaster(lag_value=7),
         RollingWindowForecaster(rolling_window=7),
+        ETSForecaster(),
+        ARIMAForecaster(),
     ]
 
-    results = run_forecasting(clean_data, models)
+    train_ratio = 0.8
+    if config.forecasting is not None:
+        train_ratio = config.forecasting.train_ratio
+
+    n_rows = clean_data.demand_history.shape[0]
+    split_idx = int(n_rows * train_ratio)
+    logger.info(
+        "Train/test split boundary: index %d of %d rows (train_ratio=%.2f)",
+        split_idx,
+        n_rows,
+        train_ratio,
+    )
+
+    results = run_forecasting(clean_data, models, train_ratio=train_ratio)
 
     # --- Evaluation ---
     summary = evaluate_models(
@@ -158,7 +181,9 @@ def main():
     )
 
     # --- Model selection + demand ---
-    best_model, demand_df = select_and_aggregate(results, summary, models)
+    best_model, demand_df = select_and_aggregate(
+        results, summary, models, config=config
+    )
 
     # --- Optimization ---
     opt_result = run_optimization(

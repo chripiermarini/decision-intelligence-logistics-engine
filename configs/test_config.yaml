@@ -1,2 +1,6 @@
 data:
   input_path: data/synthetic2
+
+forecasting:
+  metric: wape
+  train_ratio: 0.8

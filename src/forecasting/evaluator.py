@@ -9,7 +9,7 @@ from sklearn.metrics import (
     mean_squared_error,
     mean_absolute_error,
     mean_absolute_percentage_error,
-    root_mean_squared_error
+    root_mean_squared_error,
 )
 
 
