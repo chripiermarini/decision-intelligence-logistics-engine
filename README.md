@@ -1,6 +1,6 @@
 # Decision Intelligence Logistics Engine
 
-An end-to-end decision system for logistics planning that combines demand forecasting, stochastic simulation, and network optimization.
+An end-to-end decision system for logistics planning that combines demand forecasting, stochastic simulation, and network optimization. 
 
 The project is designed to showcase production-oriented applied science and engineering skills at the intersection of:
 
@@ -9,6 +9,8 @@ The project is designed to showcase production-oriented applied science and engi
 - Data Engineering
 - MLOps
 - API-based deployment
+
+The aim is to showcase my methodological research skills, within an 'offline' environment.
 
 ## Project Goal
 
