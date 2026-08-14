@@ -23,6 +23,7 @@ class ModelLookups:
     origins: list[str]
     lanes_by_dest: dict[str, list[tuple[str, float]]]
     lanes_by_origin: dict[str, list[tuple[str, float]]]
+    lead_time_map: dict[tuple[str, str], int]
 
 
 def build_lookups(
@@ -33,8 +34,19 @@ def build_lookups(
 ) -> ModelLookups:
     """Build the lookup structures used to construct variables, constraints, and the objective."""
     has_holding_cost = "holding_cost" in destinations_df.columns
+    has_lead_time = "lead_time_days" in lanes_df.columns
 
-    lanes_list = lanes_df.select("origin_id", "destination_id", "unit_cost").to_dicts()
+    select_cols = ["origin_id", "destination_id", "unit_cost"]
+    if has_lead_time:
+        select_cols.append("lead_time_days")
+
+    lanes_list = lanes_df.select(select_cols).to_dicts()
+
+    lead_time_map: dict[tuple[str, str], int] = {}
+    for lane in lanes_list:
+        o_id, d_id = lane["origin_id"], lane["destination_id"]
+        lt = int(lane.get("lead_time_days", 0) or 0)
+        lead_time_map[(o_id, d_id)] = lt
 
     capacity_map: dict[str, float] = dict(
         zip(origins_df["origin_id"].to_list(), origins_df["daily_capacity"].to_list())
@@ -74,6 +86,7 @@ def build_lookups(
         origins=origins,
         lanes_by_dest=lanes_by_dest,
         lanes_by_origin=lanes_by_origin,
+        lead_time_map=lead_time_map,
     )
 
 
@@ -114,17 +127,22 @@ def add_constraints(
     Inventory balance (per destination, per period):
         inv[d,0] = initial_inv[d] + inflow[d,0] - demand[d,0]
         inv[d,t] = inv[d,t-1] + inflow[d,t] - demand[d,t]   for t > 0
+        where inflow[d,t] sums flow[o,d, t - L_od] for lanes with lead_time_days L_od.
 
     Capacity (per origin, per period):
         sum_d flow[o,d,t] <= daily_capacity[o]
     """
     for d_id in lookups.destinations:
         for t_idx, t in enumerate(planning_horizon):
-            inflow_terms = [
-                flow_vars[(o_id, d_id, t)]
-                for o_id, _ in lookups.lanes_by_dest.get(d_id, [])
-                if (o_id, d_id, t) in flow_vars
-            ]
+            inflow_terms = []
+            for o_id, _ in lookups.lanes_by_dest.get(d_id, []):
+                lt = lookups.lead_time_map.get((o_id, d_id), 0)
+                dispatch_idx = t_idx - lt
+                if dispatch_idx >= 0:
+                    dispatch_t = planning_horizon[dispatch_idx]
+                    if (o_id, d_id, dispatch_t) in flow_vars:
+                        inflow_terms.append(flow_vars[(o_id, d_id, dispatch_t)])
+
             demand_val = lookups.demand_map.get((d_id, t), 0.0)
 
             ct = solver.Constraint(0.0, 0.0, f"inv_bal_{d_id}_{t}")

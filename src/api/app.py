@@ -67,7 +67,28 @@ def _to_origins_df(records) -> pl.DataFrame:
 
 
 def _to_lanes_df(records) -> pl.DataFrame:
-    return pl.DataFrame([r.model_dump() for r in records])
+    if any(getattr(r, "lead_time_days", 0) > 0 for r in records):
+        return pl.DataFrame(
+            [
+                {
+                    "origin_id": r.origin_id,
+                    "destination_id": r.destination_id,
+                    "unit_cost": r.unit_cost,
+                    "lead_time_days": r.lead_time_days,
+                }
+                for r in records
+            ]
+        )
+    return pl.DataFrame(
+        [
+            {
+                "origin_id": r.origin_id,
+                "destination_id": r.destination_id,
+                "unit_cost": r.unit_cost,
+            }
+            for r in records
+        ]
+    )
 
 
 def _to_destinations_df(records) -> pl.DataFrame:

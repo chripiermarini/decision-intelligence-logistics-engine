@@ -1480,3 +1480,55 @@ def test_output_completeness(problem):
     assert (
         actual_inventory_schema == expected_inventory_schema
     ), f"Inventory schema mismatch:\n  expected: {expected_inventory_schema}\n  actual: {actual_inventory_schema}"
+
+
+# ---------------------------------------------------------------------------
+# Property 6: Lead Time Equivalence
+# Feature: multi-period-lead-times, Property 6: Backward Compatibility
+# ---------------------------------------------------------------------------
+
+
+@settings(max_examples=50)
+@given(problem=feasible_problem())
+def test_lead_time_zero_equivalence(problem):
+    """Property 6: Backward Compatibility with Zero Lead Time.
+
+    When lanes explicitly specify `lead_time_days = 0`, the optimizer output
+    SHALL be identical to when `lead_time_days` column is absent.
+    """
+    (
+        demand_ts,
+        origins_df,
+        lanes_df,
+        destinations_df,
+        planning_horizon,
+        initial_inventory,
+    ) = problem
+
+    optimizer = MultiPeriodOptimizer()
+
+    result_without_lt = optimizer.solve(
+        demand_ts=demand_ts,
+        origins_df=origins_df,
+        lanes_df=lanes_df,
+        destinations_df=destinations_df,
+        planning_horizon=planning_horizon,
+        initial_inventory=initial_inventory,
+    )
+
+    lanes_with_zero_lt = lanes_df.with_columns(
+        pl.lit(0).alias("lead_time_days").cast(pl.Int64)
+    )
+
+    result_with_zero_lt = optimizer.solve(
+        demand_ts=demand_ts,
+        origins_df=origins_df,
+        lanes_df=lanes_with_zero_lt,
+        destinations_df=destinations_df,
+        planning_horizon=planning_horizon,
+        initial_inventory=initial_inventory,
+    )
+
+    assert result_with_zero_lt.total_cost == pytest.approx(
+        result_without_lt.total_cost, abs=1e-4
+    )

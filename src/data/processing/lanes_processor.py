@@ -30,8 +30,17 @@ class LanesProcessor:
         Raises
         ------
         ValueError
-            If the DataFrame is empty or missing required columns.
+            If the DataFrame is empty or missing required columns, or if lead_time_days is negative.
         """
         validate_non_empty(df)
         validate_columns(df, LanesProcessor.REQUIRED_COLUMNS)
+
+        if "lead_time_days" in df.columns:
+            negative = df.filter(pl.col("lead_time_days") < 0)
+            if not negative.is_empty():
+                invalid = negative.select(
+                    "origin_id", "destination_id", "lead_time_days"
+                ).to_dicts()
+                raise ValueError(f"Negative lead_time_days values found: {invalid}")
+
         return df.unique()

@@ -109,6 +109,17 @@ def validate_non_negative_costs(
             raise ValueError(f"Negative holding_cost values found: {invalid_rows}")
 
 
+def validate_non_negative_lead_times(lanes_df: pl.DataFrame) -> None:
+    """Raise ValueError if any lead_time_days column contains negative values."""
+    if "lead_time_days" in lanes_df.columns:
+        negative_lt = lanes_df.filter(pl.col("lead_time_days") < 0)
+        if not negative_lt.is_empty():
+            invalid_rows = negative_lt.select(
+                "origin_id", "destination_id", "lead_time_days"
+            ).to_dicts()
+            raise ValueError(f"Negative lead_time_days values found: {invalid_rows}")
+
+
 def validate_positive_capacities(origins_df: pl.DataFrame) -> None:
     """Raise ValueError if any origin has non-positive daily_capacity."""
     if "daily_capacity" in origins_df.columns:
@@ -176,6 +187,7 @@ def validate_inputs(
         message_template="{df_name} missing required columns: {missing}",
     )
     validate_non_negative_costs(lanes_df, destinations_df)
+    validate_non_negative_lead_times(lanes_df)
     validate_positive_capacities(origins_df)
     validate_origins_in_lanes(origins_df, lanes_df)
     _validate_initial_inventory(initial_inventory)

@@ -24,6 +24,13 @@ class LaneRecord(BaseModel):
     origin_id: str
     destination_id: str
     unit_cost: float
+    lead_time_days: int = Field(
+        default=0,
+        ge=0,
+        description=(
+            "Optional transit lead time in days. Defaults to 0 (instantaneous delivery)."
+        ),
+    )
 
 
 class DestinationRecord(BaseModel):

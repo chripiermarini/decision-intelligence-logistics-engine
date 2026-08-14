@@ -748,6 +748,89 @@ class TestCostBreakdown:
         assert result.total_cost == pytest.approx(45.0, abs=1e-4)
         assert result.transportation_cost == pytest.approx(40.0, abs=1e-4)
         assert result.holding_cost == pytest.approx(5.0, abs=1e-4)
+
+
+# ---------------------------------------------------------------------------
+# Tests: Multi-period lead time validation and behavior
+# ---------------------------------------------------------------------------
+
+
+class TestLeadTimeValidation:
+    """Verify validation for negative lead_time_days."""
+
+    def test_negative_lead_time_raises_value_error(self):
+        planning_horizon = [date(2024, 1, 1), date(2024, 1, 2)]
+        demand_ts = pl.DataFrame(
+            {
+                "destination_id": ["D1", "D1"],
+                "date": planning_horizon,
+                "demand": [10.0, 10.0],
+            }
+        )
+        origins_df = pl.DataFrame({"origin_id": ["O1"], "daily_capacity": [100.0]})
+        lanes_df = pl.DataFrame(
+            {
+                "origin_id": ["O1"],
+                "destination_id": ["D1"],
+                "unit_cost": [1.0],
+                "lead_time_days": [-1],
+            }
+        )
+        destinations_df = pl.DataFrame({"destination_id": ["D1"]})
+
+        with pytest.raises(ValueError, match="Negative lead_time_days values found"):
+            MultiPeriodOptimizer().solve(
+                demand_ts, origins_df, lanes_df, destinations_df, planning_horizon
+            )
+
+
+class TestLeadTimeBehavior:
+    """Verify LP behavior with 1-day or multi-day lead times."""
+
+    def test_1day_lead_time_flow_dispatched_day_before(self):
+        # Demand on day 1 = 0, day 2 = 10
+        # Lane lead time = 1 day
+        # Inflow on day 2 arrives from flow dispatched on day 1.
+        planning_horizon = [date(2024, 1, 1), date(2024, 1, 2)]
+        demand_ts = pl.DataFrame(
+            {
+                "destination_id": ["D1", "D1"],
+                "date": planning_horizon,
+                "demand": [0.0, 10.0],
+            }
+        )
+        origins_df = pl.DataFrame({"origin_id": ["O1"], "daily_capacity": [100.0]})
+        lanes_df = pl.DataFrame(
+            {
+                "origin_id": ["O1"],
+                "destination_id": ["D1"],
+                "unit_cost": [2.0],
+                "lead_time_days": [1],
+            }
+        )
+        destinations_df = pl.DataFrame({"destination_id": ["D1"]})
+
+        result = MultiPeriodOptimizer().solve(
+            demand_ts, origins_df, lanes_df, destinations_df, planning_horizon
+        )
+
+        # Flow dispatched on day 1 (2024-01-01) must be 10.0 to arrive on day 2 (2024-01-02)
+        day1_flow = result.flows.filter(
+            (pl.col("origin_id") == "O1")
+            & (pl.col("destination_id") == "D1")
+            & (pl.col("period") == date(2024, 1, 1))
+        )["flow"][0]
+        assert day1_flow == pytest.approx(10.0, abs=1e-6)
+
+        day2_flows = result.flows.filter(
+            (pl.col("origin_id") == "O1")
+            & (pl.col("destination_id") == "D1")
+            & (pl.col("period") == date(2024, 1, 2))
+        )
+        assert len(day2_flows) == 0 or day2_flows["flow"][0] == pytest.approx(
+            0.0, abs=1e-6
+        )
+
         assert result.transportation_cost + result.holding_cost == pytest.approx(
             result.total_cost, abs=1e-4
         )
