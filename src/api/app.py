@@ -251,8 +251,7 @@ def optimize(request: OptimizeRequest) -> OptimizeResponse:
         destinations_df = _to_destinations_df(request.destinations)
         planning_horizon = sorted(demand_ts["date"].unique().to_list())
 
-        config = PerDestinationConfig(model_names=["naive_forecaster"])
-        api = LogisticsAPI(config=config)
+        api = LogisticsAPI(solver_name="GLOP")
         result = api.optimize(
             demand_ts=demand_ts,
             origins_df=origins_df,

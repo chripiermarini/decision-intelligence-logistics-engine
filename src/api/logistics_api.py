@@ -15,15 +15,16 @@ class LogisticsAPI(APIInterface):
 
     Parameters
     ----------
-    config : PerDestinationConfig
+    config : PerDestinationConfig | None
         Forecasting pipeline configuration (model names, train ratio, etc.).
+        Required for ``forecast``; optional for ``optimize`` -only usage.
     solver_name : str
         OR-Tools backend solver (default ``"GLOP"``).
     """
 
     def __init__(
         self,
-        config: PerDestinationConfig,
+        config: PerDestinationConfig | None = None,
         solver_name: str = "GLOP",
     ) -> None:
         self._config = config
@@ -31,7 +32,10 @@ class LogisticsAPI(APIInterface):
 
     def forecast(self, input_data: pl.DataFrame) -> AggregatedForecastingResult:
         """Run per-destination forecasting on historical demand data."""
-        pipeline = create_forecasting_pipeline(self._config)
+        config = self._config
+        if config is None:
+            raise ValueError("Cannot forecast without a PerDestinationConfig. Pass config= when constructing LogisticsAPI.")
+        pipeline = create_forecasting_pipeline(config)
         return pipeline.run(input_data)
 
     def optimize(
